@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm Fri Oct 18 21:53:16 2019
+AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm Sun Oct 20 15:24:50 2019
 
 
 EQU  SIGNATURE_000 0000001e
@@ -2718,4 +2718,4 @@ EQU  PORTMX_CTRLD 00000203
 EQU  TCB0         00000000
 EQU  PRTA_DIR     00000400
 CSEG RESET        00000001
-CSEG MAIN         00000014
+CSEG MAIN         00000019

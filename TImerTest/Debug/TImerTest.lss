@@ -1,10 +1,10 @@
 
-AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm Fri Oct 18 21:53:16 2019
+AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm Sun Oct 20 15:24:50 2019
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc\tn402def.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc\tn402def.inc'
                                  
-                                 ;
+                                 .def TEMP = R16
                                  
                                  
                                  ;*************************************************************************
@@ -3922,12 +3922,6 @@ AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\m
                                  
                                  
                                  
-                                 ; TImerTest.asm
-                                 ;
-                                 ; Created: 10/18/2019 6:06:54 PM
-                                 ; Author : Zyn
-                                 ;
-                                 .def TEMP = R16
                                  
                                  .equ TB0_CTRLA = 0xA40
                                  .equ TB0_CTRLB = 0xA41
@@ -3952,39 +3946,48 @@ AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\m
                                  .equ PRTA_DIR = 0x400
                                  
                                  .org 0x0000
-000000 c000                      	rjmp	RESET
+000000 c000                          rjmp    RESET
                                  
                                  ; Replace with your application code
                                  RESET:
                                  
-                                 	; Enable output of TCB
-000001 e001                      	ldi		TEMP, (1 << TCB0)
-000002 9300 0203                 	sts		PORTMX_CTRLD, TEMP
+                                     ; Enable output of TCB
+000001 e001                          ldi        TEMP, (1 << TCB0)
+000002 9300 0203                     sts        PORTMX_CTRLD, TEMP
                                  
-000004 e400                      	ldi		TEMP, (1 << 6)
-000005 9300 0400                 	sts		PRTA_DIR, TEMP
+000004 e400                          ldi        TEMP, (1 << 6)
+000005 9300 0400                     sts        PRTA_DIR, TEMP
                                  
-                                 	; Configure Timer B
-000007 e001                      	ldi		TEMP, (0 << TB0_CLKSEL1) | (0 << TB0_CLKSEL0) | (1 << TB0_ENABLE)
-000008 9300 0a40                 	sts		TB0_CTRLA, TEMP
-                                 	
-00000a e007                      	ldi		TEMP, (1 << TB0_CNTMODE2) | (1 << TB0_CNTMODE1) | (1 << TB0_CNTMODE0) | (0 << TB0_CCMPEN)
-00000b 9300 0a41                 	sts		TB0_CTRLB, TEMP
+                                     ; Allow Event To Pass-Through to the pin
+000007 e001                          ldi        TEMP, 0x01
+000008 9300 018a                     sts        0x18A, TEMP
+00000a 9300 0192                     sts        0x192, TEMP
                                  
-                                 	; Set to count 26 times for 38kHz
-00000d e10a                      	ldi		TEMP, 0x1A
-00000e 9300 0a4c                 	sts		TB0_CCMPL, TEMP
                                  
-000010 e004                      	ldi		TEMP, 0x04
-000011 9300 0a4d                 	sts		TB0_CCMPH, TEMP
+                                     ;ldi        TEMP, 0x10
+                                     ;sts        0x182, TEMP
                                  
-                                 	; Enable all interrupts
-000013 9478                      	sei
+                                     ; Configure Timer B
+00000c e001                          ldi        TEMP, (0 << TB0_CLKSEL1) | (0 << TB0_CLKSEL0) | (1 << TB0_ENABLE)
+00000d 9300 0a40                     sts        TB0_CTRLA, TEMP
+                                     
+00000f e107                          ldi        TEMP, (1 << TB0_CNTMODE2) | (1 << TB0_CNTMODE1) | (1 << TB0_CNTMODE0) | (1 << TB0_CCMPEN)
+000010 9300 0a41                     sts        TB0_CTRLB, TEMP
+                                 
+                                     ; Set to count 26 times for 38kHz
+000012 e10a                          ldi        TEMP, 0x1A
+000013 9300 0a4c                     sts        TB0_CCMPL, TEMP
+                                 
+000015 e004                          ldi        TEMP, 0x04
+000016 9300 0a4d                     sts        TB0_CCMPH, TEMP
+                                 
+                                     ; Enable all interrupts
+000018 9478                          sei
                                  
                                  MAIN:
                                  
-000014 0000                      	nop
-000015 cffe                      	rjmp	MAIN
+000019 0000                          nop
+00001a cffe                          rjmp    MAIN
 
 
 RESOURCE USE INFORMATION
@@ -4004,7 +4007,7 @@ counted separately from r26..r31 here.
 "ATtiny402" register use summary:
 x  :   0 y  :   0 z  :   0 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  12 r17:   0 r18:   0 r19:   0 r20:   0 
+r13:   0 r14:   0 r15:   0 r16:  15 r17:   0 r18:   0 r19:   0 r20:   0 
 r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   0 r31:   0 
 Registers used: 1 out of 35 (2.9%)
@@ -4020,21 +4023,21 @@ clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 clt   :   0
 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   0 
 cpse  :   0 dec   :   0 des   :   0 eor   :   0 fmul  :   0 fmuls :   0 
 fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 ld    :   0 
-ldd   :   0 ldi   :   6 lds   :   0 lpm   :   0 lsl   :   0 lsr   :   0 
+ldd   :   0 ldi   :   7 lds   :   0 lpm   :   0 lsl   :   0 lsr   :   0 
 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 neg   :   0 
 nop   :   1 or    :   0 ori   :   0 out   :   0 pop   :   0 push  :   0 
 rcall :   0 ret   :   0 reti  :   0 rjmp  :   2 rol   :   0 ror   :   0 
 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 sbiw  :   0 
 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 sei   :   1 
 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 sez   :   0 
-sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   6 sub   :   0 
+sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   8 sub   :   0 
 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
 Instructions used: 5 out of 112 (4.5%)
 
 "ATtiny402" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x00002c     44      0     44    4096   1.1%
+[.cseg] 0x000000 0x000036     54      0     54    4096   1.3%
 [.dseg] 0x003f00 0x003f00      0      0      0     256   0.0%
 [.eseg] 0x000000 0x000000      0      0      0     128   0.0%
 
