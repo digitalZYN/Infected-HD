@@ -22,7 +22,10 @@
   <FILE>TImerTest.lss</FILE>
  </OUTPUT_FILES>
  <LABELS>
-  <RESET><FILE>C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm</FILE><LINE>29</LINE></RESET>
-  <MAIN><FILE>C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm</FILE><LINE>64</LINE></MAIN>
+  <RESET><FILE>C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm</FILE><LINE>64</LINE></RESET>
+  <BECOME_HUMAN><FILE>C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm</FILE><LINE>163</LINE></BECOME_HUMAN>
+  <MAIN><FILE>C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm</FILE><LINE>150</LINE></MAIN>
+  <BECOME_ZOMBIE><FILE>C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm</FILE><LINE>155</LINE></BECOME_ZOMBIE>
+  <BECOME_DOCTOR><FILE>C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm</FILE><LINE>159</LINE></BECOME_DOCTOR>
  </LABELS>
 </ASSEMBLER_INFO>

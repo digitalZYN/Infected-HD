@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm Sun Oct 20 15:24:50 2019
+AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm Tue Oct 29 20:56:27 2019
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc\tn402def.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc\tn402def.inc'
@@ -3923,10 +3923,36 @@ AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\m
                                  
                                  
                                  
+                                 .equ TA0_CTRLA = 0xA00
+                                 .equ TA0_CTRLB = 0xA01
+                                 .equ TA0_CTRLC = 0xA02
+                                 .equ TA0_CTRLD = 0xA03
+                                 
                                  .equ TB0_CTRLA = 0xA40
                                  .equ TB0_CTRLB = 0xA41
                                  .equ TB0_INTCTRL = 0xA45
                                  .equ TB0_INTFLAGS = 0xA46
+                                 .equ TB0_EVCTRL = 0xA44
+                                 .equ MCLKCTRLB = 0x61
+                                 .equ CCP = 0x34
+                                 .equ SPL = 0x3D
+                                 .equ SPH = 0x3F
+                                 
+                                 
+                                 .equ TA0_ENABLE = 0
+                                 .equ TA0_CLKSEL2 = 3
+                                 .equ TA0_CLKSEL1 = 2
+                                 .equ TA0_CLKSEL0 = 1
+                                 
+                                 .equ TA0_LPER = 0xA26
+                                 .equ TA0_HPER = 0xA27
+                                 .equ TA0_LCMP1 = 0xA2A
+                                 .equ TA0_HCMP1 = 0xA2B
+                                 
+                                 .equ TA0_CMP1EN = 5
+                                 .equ TA0_WGM2 = 2
+                                 .equ TA0_WGM1 = 1
+                                 .equ TA0_WGM0 = 0
                                  
                                  .equ TB0_CLKSEL1 = 2
                                  .equ TB0_CLKSEL0 = 1
@@ -3936,14 +3962,23 @@ AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\m
                                  .equ TB0_CNTMODE1 = 1
                                  .equ TB0_CNTMODE0 = 0
                                  .equ TB0_CCMPEN = 4
+                                 .equ TB0_CAPTEI = 0
+                                 .equ TB0_CAPT = 0
                                  
                                  .equ TB0_CCMPL = 0xA4C
                                  .equ TB0_CCMPH = 0xA4D
                                  
                                  .equ PORTMX_CTRLD = 0x203
                                  .equ TCB0 = 0
+                                 .equ CAPTEI = 0
                                  
                                  .equ PRTA_DIR = 0x400
+                                 
+                                 .equ PEN = 0
+                                 .equ PDIV0 = 1
+                                 .equ PDIV1 = 2
+                                 .equ PDIV2 = 3
+                                 .equ PDIV3 = 4
                                  
                                  .org 0x0000
 000000 c000                          rjmp    RESET
@@ -3951,43 +3986,111 @@ AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\m
                                  ; Replace with your application code
                                  RESET:
                                  
+                                 	; Setup stackpointer
+000001 ef0f                      	ldi		   TEMP, low(RAMEND)
+000002 bf0d                      	out		   SPL, TEMP
+                                 
+000003 e30f                      	ldi		   TEMP, high(RAMEND)
+000004 bf0f                      	out		   SPH, TEMP
+                                 
                                      ; Enable output of TCB
-000001 e001                          ldi        TEMP, (1 << TCB0)
-000002 9300 0203                     sts        PORTMX_CTRLD, TEMP
+000005 e002                          ldi        TEMP, (1 << 1)
+000006 9300 0400                     sts        PRTA_DIR, TEMP
                                  
-000004 e400                          ldi        TEMP, (1 << 6)
-000005 9300 0400                     sts        PRTA_DIR, TEMP
+                                 	; Enable event system for TA0 PWM output
+000008 e005                      	ldi		   TEMP, 0x05
+000009 9300 018a                 	sts		   0x18A, TEMP
                                  
-                                     ; Allow Event To Pass-Through to the pin
-000007 e001                          ldi        TEMP, 0x01
-000008 9300 018a                     sts        0x18A, TEMP
-00000a 9300 0192                     sts        0x192, TEMP
+00000b e001                      	ldi		   TEMP, 0x01
+00000c 9300 01a2                 	sts		   0x1A2, TEMP
                                  
+                                 	; TA0 will be used to generate PWM output for IR LED
+                                 	; Functions will be used to reconfigure timer settings later, but
+                                 	; the default startup will be a human
                                  
-                                     ;ldi        TEMP, 0x10
-                                     ;sts        0x182, TEMP
+                                 	; Set period ~27 uS and default 20% duty cycle (for human)
+00000e e10a                      	ldi		   TEMP, low(26)
+00000f 9300 0a26                 	sts		   TA0_LPER, TEMP
                                  
-                                     ; Configure Timer B
-00000c e001                          ldi        TEMP, (0 << TB0_CLKSEL1) | (0 << TB0_CLKSEL0) | (1 << TB0_ENABLE)
-00000d 9300 0a40                     sts        TB0_CTRLA, TEMP
-                                     
-00000f e107                          ldi        TEMP, (1 << TB0_CNTMODE2) | (1 << TB0_CNTMODE1) | (1 << TB0_CNTMODE0) | (1 << TB0_CCMPEN)
-000010 9300 0a41                     sts        TB0_CTRLB, TEMP
+000011 e000                      	ldi		   TEMP, high(26)
+000012 9300 0a27                 	sts		   TA0_HPER, TEMP
                                  
-                                     ; Set to count 26 times for 38kHz
-000012 e10a                          ldi        TEMP, 0x1A
-000013 9300 0a4c                     sts        TB0_CCMPL, TEMP
+000014 e006                      	ldi		   TEMP, low(6)
+000015 9300 0a2a                 	sts		   TA0_LCMP1, TEMP
                                  
-000015 e004                          ldi        TEMP, 0x04
-000016 9300 0a4d                     sts        TB0_CCMPH, TEMP
+000017 e000                      	ldi		   TEMP, high(6)
+000018 9300 0a2b                 	sts		   TA0_HCMP1, TEMP
+                                 
+                                 	; Enable compare mode output and set WGM of timer to PWM
+00001a e203                      	ldi		   TEMP, (1 << TA0_CMP1EN) | (0 << TA0_WGM2) | (1 << TA0_WGM1) | (1 << TA0_WGM0)
+00001b 9300 0a01                 	sts		   TA0_CTRLB, TEMP
+                                 
+                                 	; Enable will be set last to allow configuration before timer startup
+00001d e001                      	ldi		   TEMP, (1 << TA0_ENABLE) | (0 << TA0_CLKSEL2) | (0 << TA0_CLKSEL1) | (0 << TA0_CLKSEL0)
+00001e 9300 0a00                 	sts		   TA0_CTRLA, TEMP
+                                 
+                                 	; Configure event system to push pin inputs to timer
+000020 e100                      	ldi		   TEMP, 0x10
+000021 9300 0182                 	sts		   0x182, TEMP
+                                 
+000023 e003                      	ldi		   TEMP, 0x03
+000024 9300 0192                 	sts		   0x192, TEMP
+                                 
+                                 	; Configure TB0 to measure PWM coming in da stuff :D
+                                 
+000026 e001                      	ldi			  TEMP, (1 << TB0_CAPTEI)
+000027 9300 0a44                 	sts			  TB0_EVCTRL, TEMP
+                                 
+000029 e001                      	ldi			  TEMP, (1 << TB0_CAPT)
+00002a 9300 0a45                 	sts			  TB0_INTCTRL, TEMP
+                                 
+                                 	; Configure timer to count in PWM capture mode
+00002c e004                      	ldi			  TEMP, (0 << TB0_CCMPEN) | (1 << TB0_CNTMODE2) | (0 << TB0_CNTMODE1) | (0 << TB0_CNTMODE0)
+00002d 9300 0a41                 	sts			  TB0_CTRLB, TEMP
+                                 
+                                 	; Enable the timer last to ensure we have configured everything
+00002f e001                      	ldi			  TEMP, (1 << TB0_ENABLE)
+000030 9300 0a40                 	sts		      TB0_CTRLA, TEMP
+                                 	
+                                 	; Allow changes to S C A R Y registers >=D
+000032 ed08                      	ldi			  TEMP, 0xD8
+000033 bf04                      	out			  CCP, TEMP
+                                 
+                                 	; Set internal clock divide to achieve 1Mhz, but requires 16MHz internal clock
+000034 e007                      	ldi		   TEMP, 0x07
+000035 9300 0061                 	sts		   MCLKCTRLB, TEMP
+                                 
+                                 	; Now disallow the scary changes
+000037 2700                      	clr		   TEMP
+000038 bf04                      	out		   CCP, TEMP
                                  
                                      ; Enable all interrupts
-000018 9478                          sei
+000039 9478                          sei
+                                 
+                                 	; Call become human
+00003a d004                      	rcall	   BECOME_HUMAN
                                  
                                  MAIN:
                                  
-000019 0000                          nop
-00001a cffe                          rjmp    MAIN
+00003b 0000                          nop
+00003c cffe                          rjmp    MAIN
+                                 
+                                 BECOME_ZOMBIE:
+                                 
+00003d 9508                      	ret
+                                 
+                                 BECOME_DOCTOR:
+                                 
+00003e 9508                      	ret
+                                 
+                                 BECOME_HUMAN:
+                                 
+00003f 930f                      	push	TEMP
+                                 
+000040 0000                      	nop
+                                 
+000041 910f                      	pop		TEMP
+                                 
 
 
 RESOURCE USE INFORMATION
@@ -4007,7 +4110,7 @@ counted separately from r26..r31 here.
 "ATtiny402" register use summary:
 x  :   0 y  :   0 z  :   0 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  15 r17:   0 r18:   0 r19:   0 r20:   0 
+r13:   0 r14:   0 r15:   0 r16:  42 r17:   0 r18:   0 r19:   0 r20:   0 
 r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   0 r31:   0 
 Registers used: 1 out of 35 (2.9%)
@@ -4019,25 +4122,25 @@ brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
 brne  :   0 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 cbi   :   0 cbr   :   0 clc   :   0 
-clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 clt   :   0 
+clh   :   0 cli   :   0 cln   :   0 clr   :   1 cls   :   0 clt   :   0 
 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   0 
 cpse  :   0 dec   :   0 des   :   0 eor   :   0 fmul  :   0 fmuls :   0 
 fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 ld    :   0 
-ldd   :   0 ldi   :   7 lds   :   0 lpm   :   0 lsl   :   0 lsr   :   0 
+ldd   :   0 ldi   :  19 lds   :   0 lpm   :   0 lsl   :   0 lsr   :   0 
 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 neg   :   0 
-nop   :   1 or    :   0 ori   :   0 out   :   0 pop   :   0 push  :   0 
-rcall :   0 ret   :   0 reti  :   0 rjmp  :   2 rol   :   0 ror   :   0 
+nop   :   2 or    :   0 ori   :   0 out   :   4 pop   :   1 push  :   1 
+rcall :   1 ret   :   3 reti  :   0 rjmp  :   2 rol   :   0 ror   :   0 
 sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 sbiw  :   0 
 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 sei   :   1 
 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 sez   :   0 
-sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :   8 sub   :   0 
+sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  16 sub   :   0 
 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 5 out of 112 (4.5%)
+Instructions used: 11 out of 112 (9.8%)
 
 "ATtiny402" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000036     54      0     54    4096   1.3%
+[.cseg] 0x000000 0x000086    134      0    134    4096   3.3%
 [.dseg] 0x003f00 0x003f00      0      0      0     256   0.0%
 [.eseg] 0x000000 0x000000      0      0      0     128   0.0%
 
