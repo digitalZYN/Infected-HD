@@ -1,3 +1,4 @@
+; BEGIN constants
 .def TEMP = R16
 .def READ_VALUE = R17
  
@@ -67,6 +68,8 @@
 .equ PDIV2 = 3
 .equ PDIV3 = 4
  
+; END constants
+
 .org 0x0000
     rjmp    RESET
  
