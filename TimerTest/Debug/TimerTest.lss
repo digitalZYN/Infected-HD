@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\main.asm Tue Oct 29 20:56:27 2019
+AVRASM ver. 2.2.7  C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm Sun Nov 24 19:06:38 2019
 
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc\tn402def.inc'
 [builtin](2): Including file 'C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc\tn402def.inc'
@@ -3922,12 +3922,19 @@ AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\m
                                  
                                  
                                  
+                                 .def READ_VALUE = R17
+                                  
+                                 .equ MAIN_STATUS = 0x1C
+                                 
+                                 .equ HUMAN = 0
+                                 .equ ZOMBIE = 1
+                                 .equ DOCTOR = 2
                                  
                                  .equ TA0_CTRLA = 0xA00
                                  .equ TA0_CTRLB = 0xA01
                                  .equ TA0_CTRLC = 0xA02
                                  .equ TA0_CTRLD = 0xA03
-                                 
+                                  
                                  .equ TB0_CTRLA = 0xA40
                                  .equ TB0_CTRLB = 0xA41
                                  .equ TB0_INTCTRL = 0xA45
@@ -3937,160 +3944,424 @@ AVRASM ver. 2.2.7  C:\Users\Zyn\Documents\Atmel Studio\7.0\TImerTest\TImerTest\m
                                  .equ CCP = 0x34
                                  .equ SPL = 0x3D
                                  .equ SPH = 0x3F
-                                 
-                                 
+                                  
+                                  
                                  .equ TA0_ENABLE = 0
                                  .equ TA0_CLKSEL2 = 3
                                  .equ TA0_CLKSEL1 = 2
                                  .equ TA0_CLKSEL0 = 1
-                                 
+                                  
                                  .equ TA0_LPER = 0xA26
                                  .equ TA0_HPER = 0xA27
                                  .equ TA0_LCMP1 = 0xA2A
                                  .equ TA0_HCMP1 = 0xA2B
+                                 .equ TA0_LCNT = 0xA20
+                                 .equ TA0_HCNT = 0xA21
                                  
                                  .equ TA0_CMP1EN = 5
                                  .equ TA0_WGM2 = 2
                                  .equ TA0_WGM1 = 1
                                  .equ TA0_WGM0 = 0
-                                 
+                                  
                                  .equ TB0_CLKSEL1 = 2
                                  .equ TB0_CLKSEL0 = 1
                                  .equ TB0_ENABLE = 0
-                                 
+                                  
                                  .equ TB0_CNTMODE2 = 2
                                  .equ TB0_CNTMODE1 = 1
                                  .equ TB0_CNTMODE0 = 0
                                  .equ TB0_CCMPEN = 4
                                  .equ TB0_CAPTEI = 0
                                  .equ TB0_CAPT = 0
-                                 
+                                 .equ TB0_CCMPINIT = 5
+                                  
                                  .equ TB0_CCMPL = 0xA4C
                                  .equ TB0_CCMPH = 0xA4D
-                                 
+                                  
                                  .equ PORTMX_CTRLD = 0x203
                                  .equ TCB0 = 0
                                  .equ CAPTEI = 0
-                                 
+                                  
                                  .equ PRTA_DIR = 0x400
-                                 
+                                  
                                  .equ PEN = 0
                                  .equ PDIV0 = 1
                                  .equ PDIV1 = 2
                                  .equ PDIV2 = 3
                                  .equ PDIV3 = 4
-                                 
+                                  
                                  .org 0x0000
-000000 c000                          rjmp    RESET
-                                 
+000000 c03d                          rjmp    RESET
+                                  
+                                 .org 26
+00001a c0a3                          rjmp    SIGNAL_FOUND
+                                  
+                                 ; Move this down a bit :)
+                                 .org 62
+                                  
                                  ; Replace with your application code
                                  RESET:
-                                 
-                                 	; Setup stackpointer
-000001 ef0f                      	ldi		   TEMP, low(RAMEND)
-000002 bf0d                      	out		   SPL, TEMP
-                                 
-000003 e30f                      	ldi		   TEMP, high(RAMEND)
-000004 bf0f                      	out		   SPH, TEMP
-                                 
+                                  
+                                     ; Setup stackpointer
+00003e ef0f                          ldi        TEMP, low(RAMEND)
+00003f bf0d                          out        SPL, TEMP
+                                  
+000040 e30f                          ldi        TEMP, high(RAMEND)
+000041 bf0f                          out        SPH, TEMP
+                                  
                                      ; Enable output of TCB
-000005 e002                          ldi        TEMP, (1 << 1)
-000006 9300 0400                     sts        PRTA_DIR, TEMP
+000042 e002                          ldi        TEMP, (1 << 1)
+000043 9300 0400                     sts        PRTA_DIR, TEMP
+                                  
+                                     ; Enable event system for TA0 PWM output
+000045 e005                          ldi        TEMP, 0x05
+000046 9300 018a                     sts        0x18A, TEMP
+                                  
+000048 e001                          ldi        TEMP, 0x01
+000049 9300 01a2                     sts        0x1A2, TEMP
+                                  
+                                 	; Setup the STATUS as HUMAN
+00004b e001                      	ldi		TEMP, (1 << HUMAN)
+00004c bb0c                      	out		MAIN_STATUS, TEMP
                                  
-                                 	; Enable event system for TA0 PWM output
-000008 e005                      	ldi		   TEMP, 0x05
-000009 9300 018a                 	sts		   0x18A, TEMP
-                                 
-00000b e001                      	ldi		   TEMP, 0x01
-00000c 9300 01a2                 	sts		   0x1A2, TEMP
-                                 
-                                 	; TA0 will be used to generate PWM output for IR LED
-                                 	; Functions will be used to reconfigure timer settings later, but
-                                 	; the default startup will be a human
-                                 
-                                 	; Set period ~27 uS and default 20% duty cycle (for human)
-00000e e10a                      	ldi		   TEMP, low(26)
-00000f 9300 0a26                 	sts		   TA0_LPER, TEMP
-                                 
-000011 e000                      	ldi		   TEMP, high(26)
-000012 9300 0a27                 	sts		   TA0_HPER, TEMP
-                                 
-000014 e006                      	ldi		   TEMP, low(6)
-000015 9300 0a2a                 	sts		   TA0_LCMP1, TEMP
-                                 
-000017 e000                      	ldi		   TEMP, high(6)
-000018 9300 0a2b                 	sts		   TA0_HCMP1, TEMP
-                                 
-                                 	; Enable compare mode output and set WGM of timer to PWM
-00001a e203                      	ldi		   TEMP, (1 << TA0_CMP1EN) | (0 << TA0_WGM2) | (1 << TA0_WGM1) | (1 << TA0_WGM0)
-00001b 9300 0a01                 	sts		   TA0_CTRLB, TEMP
-                                 
-                                 	; Enable will be set last to allow configuration before timer startup
-00001d e001                      	ldi		   TEMP, (1 << TA0_ENABLE) | (0 << TA0_CLKSEL2) | (0 << TA0_CLKSEL1) | (0 << TA0_CLKSEL0)
-00001e 9300 0a00                 	sts		   TA0_CTRLA, TEMP
-                                 
-                                 	; Configure event system to push pin inputs to timer
-000020 e100                      	ldi		   TEMP, 0x10
-000021 9300 0182                 	sts		   0x182, TEMP
-                                 
-000023 e003                      	ldi		   TEMP, 0x03
-000024 9300 0192                 	sts		   0x192, TEMP
-                                 
-                                 	; Configure TB0 to measure PWM coming in da stuff :D
-                                 
-000026 e001                      	ldi			  TEMP, (1 << TB0_CAPTEI)
-000027 9300 0a44                 	sts			  TB0_EVCTRL, TEMP
-                                 
-000029 e001                      	ldi			  TEMP, (1 << TB0_CAPT)
-00002a 9300 0a45                 	sts			  TB0_INTCTRL, TEMP
-                                 
-                                 	; Configure timer to count in PWM capture mode
-00002c e004                      	ldi			  TEMP, (0 << TB0_CCMPEN) | (1 << TB0_CNTMODE2) | (0 << TB0_CNTMODE1) | (0 << TB0_CNTMODE0)
-00002d 9300 0a41                 	sts			  TB0_CTRLB, TEMP
-                                 
-                                 	; Enable the timer last to ensure we have configured everything
-00002f e001                      	ldi			  TEMP, (1 << TB0_ENABLE)
-000030 9300 0a40                 	sts		      TB0_CTRLA, TEMP
-                                 	
-                                 	; Allow changes to S C A R Y registers >=D
-000032 ed08                      	ldi			  TEMP, 0xD8
-000033 bf04                      	out			  CCP, TEMP
-                                 
-                                 	; Set internal clock divide to achieve 1Mhz, but requires 16MHz internal clock
-000034 e007                      	ldi		   TEMP, 0x07
-000035 9300 0061                 	sts		   MCLKCTRLB, TEMP
-                                 
-                                 	; Now disallow the scary changes
-000037 2700                      	clr		   TEMP
-000038 bf04                      	out		   CCP, TEMP
-                                 
+                                     ; TA0 will be used to generate PWM output for IR LED
+                                     ; Functions will be used to reconfigure timer settings later, but
+                                     ; the default startup will be a human
+                                  
+                                     ; Set period ~27 uS and default 80% duty cycle (for zombie)
+                                 	; but the timer will not be enabled since humans do not
+                                 	; broadcast a signal
+00004d e10a                          ldi        TEMP, low(26)
+00004e 9300 0a26                     sts        TA0_LPER, TEMP
+                                  
+000050 e000                          ldi        TEMP, high(26)
+000051 9300 0a27                     sts        TA0_HPER, TEMP
+                                  
+000053 e104                          ldi        TEMP, low(20)
+000054 9300 0a2a                 	sts        TA0_LCMP1, TEMP
+                                  
+000056 e000                          ldi        TEMP, high(20)
+000057 9300 0a2b                     sts        TA0_HCMP1, TEMP
+                                  
+                                     ; Enable compare mode output and set WGM of timer to PWM
+000059 e203                          ldi        TEMP, (1 << TA0_CMP1EN) | (0 << TA0_WGM2) | (1 << TA0_WGM1) | (1 << TA0_WGM0)
+00005a 9300 0a01                     sts        TA0_CTRLB, TEMP
+                                  
+                                     ; Enable will be set last to allow configuration before timer startup
+00005c e000                          ldi        TEMP, (0 << TA0_ENABLE) | (0 << TA0_CLKSEL2) | (0 << TA0_CLKSEL1) | (0 << TA0_CLKSEL0)
+00005d 9300 0a00                     sts        TA0_CTRLA, TEMP
+                                  
+                                     ; Configure event system to push pin inputs to timer
+00005f e100                          ldi        TEMP, 0x10
+000060 9300 0182                     sts        0x182, TEMP
+                                  
+000062 e003                          ldi        TEMP, 0x03
+000063 9300 0192                     sts        0x192, TEMP
+                                  
+                                     ; Configure timer to count in PWM capture mode
+000065 e204                          ldi           TEMP, (0 << TB0_CCMPEN) | (1 << TB0_CNTMODE2) | (0 << TB0_CNTMODE1) | (0 << TB0_CNTMODE0) | (1 << TB0_CCMPINIT)
+000066 9300 0a41                     sts           TB0_CTRLB, TEMP
+                                  
+                                     ; Configure TB0 to measure PWM coming in da stuff :D
+                                  
+000068 e001                          ldi           TEMP, (1 << TB0_CAPTEI)
+000069 9300 0a44                     sts           TB0_EVCTRL, TEMP
+                                  
+00006b e001                          ldi           TEMP, (1 << TB0_CAPT)
+00006c 9300 0a45                     sts           TB0_INTCTRL, TEMP
+                                  
+                                     ; Enable the timer last to ensure we have configured everything
+00006e e001                          ldi           TEMP, (1 << TB0_ENABLE)
+00006f 9300 0a40                     sts           TB0_CTRLA, TEMP
+                                    
+                                     ; Allow changes to S C A R Y registers >=D
+000071 ed08                          ldi           TEMP, 0xD8
+000072 bf04                          out           CCP, TEMP
+                                  
+                                     ; Set internal clock divide to achieve 1Mhz, but requires 16MHz internal clock
+000073 e007                          ldi        TEMP, 0x07
+000074 9300 0061                     sts        MCLKCTRLB, TEMP
+                                  
+                                     ; Now disallow the scary changes
+000076 2700                          clr        TEMP
+000077 bf04                          out        CCP, TEMP
+                                  
                                      ; Enable all interrupts
-000039 9478                          sei
-                                 
-                                 	; Call become human
-00003a d004                      	rcall	   BECOME_HUMAN
-                                 
+000078 9478                          sei
+                                  
                                  MAIN:
+                                  
+000079 0000                          nop
+00007a cffe                          rjmp    MAIN
                                  
-00003b 0000                          nop
-00003c cffe                          rjmp    MAIN
+                                 STOP_TA0:
+                                 
+                                 	; Used to stop the main PWM timer
+                                 
+00007b 930f                      	push	TEMP
+                                 
+                                 	; Stop timer
+00007c e000                          ldi        TEMP, (0 << TA0_ENABLE) | (0 << TA0_CLKSEL2) | (0 << TA0_CLKSEL1) | (0 << TA0_CLKSEL0)
+00007d 9300 0a00                     sts        TA0_CTRLA, TEMP
+                                 
+                                 	; Clear count variable
+00007f 2700                      	clr		   TEMP
+000080 9300 0a20                 	sts		   TA0_LCNT, TEMP
+000082 9300 0a21                 	sts		   TA0_HCNT, TEMP
+                                 
+000084 910f                      	pop		TEMP
+                                 
+000085 9508                      	ret
+                                 
+                                 START_TA0:
+                                 
+                                 	; Used to start the main PWM timer
+                                 
+000086 930f                      	push	TEMP
+                                 
+                                 	; Start timer
+000087 e001                      	ldi        TEMP, (1 << TA0_ENABLE) | (0 << TA0_CLKSEL2) | (0 << TA0_CLKSEL1) | (0 << TA0_CLKSEL0)
+000088 9300 0a00                     sts        TA0_CTRLA, TEMP
+                                 
+00008a 910f                      	pop		TEMP
+                                 
+00008b 9508                      	ret
                                  
                                  BECOME_ZOMBIE:
+                                  
+                                 	; Configure timer to produce zombie broadcasts!
+00008c 930f                      	push	TEMP
                                  
-00003d 9508                      	ret
+                                 	; Stop the timer
+00008d dfed                      	rcall	STOP_TA0
                                  
+                                 	; Configure the master STATE register
+00008e b30c                      	in		TEMP, MAIN_STATUS
+                                 
+                                 	; Clear out all status information
+00008f 7f08                      	andi	TEMP, ~( (1 << HUMAN) | (1 << DOCTOR) | (1 << ZOMBIE) )
+                                 	
+                                 	; Add human status
+000090 6002                      	ori		TEMP, (1 << ZOMBIE)
+                                 
+                                 	; Apply to main register
+000091 bb0c                      	out		MAIN_STATUS, TEMP
+                                 
+                                 	; Use an 80% duty cycle for the Zombie
+000092 e104                      	ldi        TEMP, low(20)
+000093 9300 0a2a                 	sts        TA0_LCMP1, TEMP
+                                  
+000095 e000                          ldi        TEMP, high(20)
+000096 9300 0a2b                     sts        TA0_HCMP1, TEMP
+                                 
+                                 	; Start the timer
+000098 dfed                      	rcall	START_TA0
+                                 
+000099 910f                      	pop		TEMP
+                                 
+00009a 9508                          ret
+                                  
                                  BECOME_DOCTOR:
+                                 	
+                                 	; Configure timer to produce doctor broadcasts!
+00009b 930f                      	push	TEMP
                                  
-00003e 9508                      	ret
+                                 	; Stop the timer
+00009c dfde                      	rcall	STOP_TA0
                                  
+                                 	; Configure the master STATE register
+00009d b30c                      	in		TEMP, MAIN_STATUS
+                                 
+                                 	; Clear out all status information
+00009e 7f08                      	andi	TEMP, ~( (1 << HUMAN) | (1 << DOCTOR) | (1 << ZOMBIE) )
+                                 	
+                                 	; Add human status
+00009f 6004                      	ori		TEMP, (1 << DOCTOR)
+                                 
+                                 	; Apply to main register
+0000a0 bb0c                      	out		MAIN_STATUS, TEMP
+                                 
+                                 	; Use an 20% duty cycle for the doctor
+0000a1 e006                      	ldi        TEMP, low(6)
+0000a2 9300 0a2a                 	sts        TA0_LCMP1, TEMP
+                                  
+0000a4 e000                          ldi        TEMP, high(6)
+0000a5 9300 0a2b                     sts        TA0_HCMP1, TEMP
+                                 
+                                 	; Start the timer
+0000a7 dfde                      	rcall	START_TA0
+                                 
+0000a8 910f                      	pop		TEMP
+                                 
+0000a9 9508                          ret
+                                  
                                  BECOME_HUMAN:
                                  
-00003f 930f                      	push	TEMP
+                                 	; Set state to HUMAN
                                  
-000040 0000                      	nop
+0000aa 930f                      	push	TEMP
+                                 	 
+                                 	; Simply disable the timer since humans do not broadcast anything
                                  
-000041 910f                      	pop		TEMP
+                                 	; Stop the timer
+0000ab dfcf                      	rcall	STOP_TA0
                                  
+                                 	; Configure the master STATE register
+0000ac b30c                      	in		TEMP, MAIN_STATUS
+                                 
+                                 	; Clear out all status information
+0000ad 7f08                      	andi	TEMP, ~( (1 << HUMAN) | (1 << DOCTOR) | (1 << ZOMBIE) )
+                                 	
+                                 	; Add human status
+0000ae 6001                      	ori		TEMP, (1 << HUMAN)
+                                 
+                                 	; Apply to main register
+0000af bb0c                      	out		MAIN_STATUS, TEMP
+                                 
+0000b0 910f                      	pop		TEMP
+                                 
+0000b1 9508                          ret
+                                  
+                                 IS_HUMAN:
+                                 
+                                 	; Used to TEMP register to return values
+                                 	; do not call this if you want to retain the
+                                 	; value in TEMP
+                                 
+                                 	; TEMP will return 0xFF if the state is HUMAN
+                                 	; otherwise 0x00
+                                 
+0000b2 2700                      	clr		TEMP
+                                 
+0000b3 99e0                      	sbic	MAIN_STATUS, HUMAN
+0000b4 ef0f                      	ldi		TEMP, 0xFF
+                                 
+0000b5 9508                      	ret
+                                 
+                                 IS_DOCTOR:
+                                 
+                                 	; Used to TEMP register to return values
+                                 	; do not call this if you want to retain the
+                                 	; value in TEMP
+                                 
+                                 	; TEMP will return 0xFF if the state is DOCTOR
+                                 	; otherwise 0x00
+                                 
+0000b6 2700                      	clr		TEMP
+                                 
+0000b7 99e2                      	sbic	MAIN_STATUS, DOCTOR
+0000b8 ef0f                      	ldi		TEMP, 0xFF
+                                 
+0000b9 9508                      	ret
+                                 
+                                 IS_ZOMBIE:
+                                 
+                                 	; Used to TEMP register to return values
+                                 	; do not call this if you want to retain the
+                                 	; value in TEMP
+                                 
+                                 	; TEMP will return 0xFF if the state is ZOMBIE
+                                 	; otherwise 0x00
+                                 
+0000ba 2700                      	clr		TEMP
+                                 
+0000bb 99e1                      	sbic	MAIN_STATUS, ZOMBIE
+0000bc ef0f                      	ldi		TEMP, 0xFF
+                                 
+0000bd 9508                      	ret
+                                 
+                                 ; This will be ran if a signal is measured by the timer
+                                 SIGNAL_FOUND:
+                                  
+0000be 930f                          push    TEMP
+0000bf 931f                          push    READ_VALUE
+                                  
+0000c0 0000                          nop
+                                  
+0000c1 9110 0a4c                     lds     READ_VALUE, TB0_CCMPL
+0000c3 9100 0a4d                     lds     TEMP, TB0_CCMPH
+                                  
+                                     ; At this point, READ_VALUE is holding the number we need
+                                     ; to check, so check to see if number is within range
+                                  
+                                     ; Do this -> (4 =< READ_VALUE >= 8)
+                                  
+0000c5 3014                          cpi     READ_VALUE, 4
+                                  
+0000c6 f40c                          brge    GE_TO_FOUR
+0000c7 c012                          rjmp    FAILED_CHECK
+                                  
+                                     GE_TO_FOUR:
+                                  
+                                         ; Now check to see if we are less than equal to 8
+0000c8 3019                              cpi     READ_VALUE, 9
+                                  
+0000c9 f00c                              brlt    LE_TO_EIGHT
+0000ca c005                              rjmp    FAILED_DOCTOR_CHECK
+                                  
+                                         LE_TO_EIGHT:
+                                  
+                                             ; If we end up here, then a doctor has been detected
+                                             ; we can count up a certain amount of times or just
+                                             ; send it on the first detection. I would recommend the prior
+                                  
+                                 			; Check to see if they are a zombie
+0000cb dfee                      			rcall	IS_ZOMBIE
+0000cc 3f0f                      			cpi		TEMP, 0xFF
+                                 
+                                 			; If they aren't a zombie, no need to reconfigure timers etc.
+0000cd f411                      			brne	FAILED_DOCTOR_CHECK
+                                 
+                                 			; Now we convert them back to human. For testing, we will simply
+                                 			; be setting them straight to a human
+                                 
+                                 				   ;*Detroit :)
+0000ce dfdb                      			rcall	BECOME_HUMAN
+0000cf 0000                                  nop
+                                  
+                                     FAILED_DOCTOR_CHECK:
+                                  
+                                 	; Now check to see if the signal we received was a zombie!
+                                 
+                                 	; Here is a logic being peformed: (17 =< READ_VALUE >= 23)
+                                 
+0000d0 3111                      	cpi     READ_VALUE, 17
+                                 
+0000d1 f40c                      	brge    GE_TO_SEVENTEEN
+0000d2 c007                          rjmp    FAILED_CHECK
+                                 
+                                 	GE_TO_SEVENTEEN:
+                                 
+                                 		; Now check and see if we are less than or equal to 23
+0000d3 3118                      		cpi     READ_VALUE, 24
+                                  
+0000d4 f00c                              brlt    LE_TO_TWENTYTHREE
+0000d5 c004                              rjmp    FAILED_ZOMBIE_CHECK
+                                 
+                                 		LE_TO_TWENTYTHREE:
+                                 
+                                 			; Now, if we end up here, a zombie's signal has reached our
+                                 			; poor player :( so now they are I N F E C T E D :O
+                                 
+                                 			; Once again.. for testing, we will infect them if they are not a
+                                 			; doctor or zombie
+                                 
+0000d6 dfdb                      			rcall	IS_HUMAN
+0000d7 3f0f                      			cpi		TEMP, 0xFF
+                                 
+                                 			; If they aren't human, then there's no purpose in infecting them
+0000d8 f409                      			brne	FAILED_ZOMBIE_CHECK
+                                 
+                                 			; now, deploy the infection!
+0000d9 dfb2                      			rcall	BECOME_ZOMBIE
+                                 
+                                 	FAILED_ZOMBIE_CHECK:
+                                 
+                                     FAILED_CHECK:
+                                  
+0000da 911f                          pop     READ_VALUE
+0000db 910f                          pop     TEMP
+                                  
 
 
 RESOURCE USE INFORMATION
@@ -4110,37 +4381,37 @@ counted separately from r26..r31 here.
 "ATtiny402" register use summary:
 x  :   0 y  :   0 z  :   0 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 
 r5 :   0 r6 :   0 r7 :   0 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 
-r13:   0 r14:   0 r15:   0 r16:  42 r17:   0 r18:   0 r19:   0 r20:   0 
+r13:   0 r14:   0 r15:   0 r16:  90 r17:   7 r18:   0 r19:   0 r20:   0 
 r21:   0 r22:   0 r23:   0 r24:   0 r25:   0 r26:   0 r27:   0 r28:   0 
 r29:   0 r30:   0 r31:   0 
-Registers used: 1 out of 35 (2.9%)
+Registers used: 2 out of 35 (5.7%)
 
 "ATtiny402" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   0 adiw  :   0 and   :   0 
-andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   0 brhc  :   0 
-brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
-brne  :   0 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+andi  :   3 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
+brcc  :   0 brcs  :   0 break :   0 breq  :   0 brge  :   2 brhc  :   0 
+brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   2 brmi  :   0 
+brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 cbi   :   0 cbr   :   0 clc   :   0 
-clh   :   0 cli   :   0 cln   :   0 clr   :   1 cls   :   0 clt   :   0 
-clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   0 
+clh   :   0 cli   :   0 cln   :   0 clr   :   5 cls   :   0 clt   :   0 
+clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 cpi   :   6 
 cpse  :   0 dec   :   0 des   :   0 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   0 ld    :   0 
-ldd   :   0 ldi   :  19 lds   :   0 lpm   :   0 lsl   :   0 lsr   :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   3 inc   :   0 ld    :   0 
+ldd   :   0 ldi   :  29 lds   :   2 lpm   :   0 lsl   :   0 lsr   :   0 
 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 neg   :   0 
-nop   :   2 or    :   0 ori   :   0 out   :   4 pop   :   1 push  :   1 
-rcall :   1 ret   :   3 reti  :   0 rjmp  :   2 rol   :   0 ror   :   0 
-sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   0 sbis  :   0 sbiw  :   0 
+nop   :   3 or    :   0 ori   :   3 out   :   8 pop   :   7 push  :   7 
+rcall :   9 ret   :   8 reti  :   1 rjmp  :   7 rol   :   0 ror   :   0 
+sbc   :   0 sbci  :   0 sbi   :   0 sbic  :   3 sbis  :   0 sbiw  :   0 
 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0 sei   :   1 
 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 sez   :   0 
-sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  16 sub   :   0 
+sleep :   0 spm   :   0 st    :   0 std   :   0 sts   :  24 sub   :   0 
 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 11 out of 112 (9.8%)
+Instructions used: 21 out of 112 (18.8%)
 
 "ATtiny402" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000086    134      0    134    4096   3.3%
+[.cseg] 0x000000 0x0001ba    322      0    322    4096   7.9%
 [.dseg] 0x003f00 0x003f00      0      0      0     256   0.0%
 [.eseg] 0x000000 0x000000      0      0      0     128   0.0%
 

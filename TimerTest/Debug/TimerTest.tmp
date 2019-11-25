@@ -1,0 +1,44 @@
+<ASSEMBLER_INFO>
+ <VERSION>2.2.7</VERSION>
+ <DEVICE>"ATtiny402"</DEVICE>
+ <WORKING_DIR>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\Debug</WORKING_DIR>
+ <INCLUDE_PATH>
+  <DIR>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\Studio\7.0\toolchain\avr8\avrassembler\Include</DIR>
+  <DIR>C:\Program Files (x86)\Atmel\AVR Tools\AvrAssembler2\Appnotes</DIR>
+ </INCLUDE_PATH>
+ <SOURCE_FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</SOURCE_FILE>
+ <INCLUDED_FILES>
+  <FILE>C:/Program Files (x86)\Atmel\Studio\7.0\Packs\atmel\ATtiny_DFP\1.3.229\avrasm\inc\tn402def.inc</FILE>
+ </INCLUDED_FILES>
+ <OBJECT_FILES>
+  <FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\Debug\TimerTest.obj</FILE>
+ </OBJECT_FILES>
+ <HEX_FILES>
+  <FILE>TimerTest.hex</FILE>
+ </HEX_FILES>
+ <OUTPUT_FILES>
+  <FILE>TimerTest.map</FILE>
+  <FILE>TimerTest.lss</FILE>
+ </OUTPUT_FILES>
+ <LABELS>
+  <RESET><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>80</LINE></RESET>
+  <SIGNAL_FOUND><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>351</LINE></SIGNAL_FOUND>
+  <MAIN><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>169</LINE></MAIN>
+  <STOP_TA0><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>174</LINE></STOP_TA0>
+  <START_TA0><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>193</LINE></START_TA0>
+  <BECOME_ZOMBIE><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>207</LINE></BECOME_ZOMBIE>
+  <BECOME_DOCTOR><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>241</LINE></BECOME_DOCTOR>
+  <BECOME_HUMAN><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>275</LINE></BECOME_HUMAN>
+  <IS_HUMAN><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>302</LINE></IS_HUMAN>
+  <IS_DOCTOR><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>318</LINE></IS_DOCTOR>
+  <IS_ZOMBIE><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>334</LINE></IS_ZOMBIE>
+  <GE_TO_FOUR><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>371</LINE></GE_TO_FOUR>
+  <FAILED_CHECK><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>437</LINE></FAILED_CHECK>
+  <LE_TO_EIGHT><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>379</LINE></LE_TO_EIGHT>
+  <FAILED_DOCTOR_CHECK><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>399</LINE></FAILED_DOCTOR_CHECK>
+  <GE_TO_SEVENTEEN><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>410</LINE></GE_TO_SEVENTEEN>
+  <LE_TO_TWENTYTHREE><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>418</LINE></LE_TO_TWENTYTHREE>
+  <FAILED_ZOMBIE_CHECK><FILE>C:\Users\activates\Documents\Atmel Studio\7.0\TimerTest\TimerTest\main.asm</FILE><LINE>435</LINE></FAILED_ZOMBIE_CHECK>
+ </LABELS>
+</ASSEMBLER_INFO>
