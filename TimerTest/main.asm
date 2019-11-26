@@ -2,11 +2,16 @@
 .def TEMP = R16
 .def READ_VALUE = R17
  
+ ; For debounce stats
+ .def DB_COUNT = R18
+ .def DB_COMPARE = R19
+
 .equ MAIN_STATUS = 0x1C
 
 .equ HUMAN = 0
 .equ ZOMBIE = 1
 .equ DOCTOR = 2
+.equ BUTTON_PRESS = 3
 
 .equ TA0_CTRLA = 0xA00
 .equ TA0_CTRLB = 0xA01
@@ -106,14 +111,6 @@ RESET:
 	ldi		TEMP, (1 << HUMAN)
 	out		MAIN_STATUS, TEMP
 
-	; Setup PA7 interrupt for Mode Button Sensing
-	; It will be configured as sensing a RISING _| edge
-	; so make sure to put a pull down resistor on the pin JIC!
-	
-	; Enable configuration directly on pin
-	ldi		TEMP, 0x2
-	sts		PRTA_PIN7CTRL, TEMP
-
     ; TA0 will be used to generate PWM output for IR LED
     ; Functions will be used to reconfigure timer settings later, but
     ; the default startup will be a human
@@ -181,11 +178,39 @@ RESET:
  
 MAIN:
  
+	; Make sure the button is not being held down and continuosly triggering this
+	in		TEMP, MAIN_STATUS
+	andi	TEMP, (1 << BUTTON_PRESS)
+
+	cpi		TEMP, (1 << BUTTON_PRESS)
+
+	brne	MODE_BUTTON_UNPRESSED
+
+	; If we get here, the last known state of the button was pressed, so check to
+	; see if it's not pressed. If it isn't, change the button state and continue
+	; on. If it is still pressed, then just restart the loop
+
+	; Pull pin state
+	lds		TEMP, 0x408
+
+	; Clean it up
+	andi	TEMP, (1 << 7)
+
+	cpi		TEMP, (1 << 7)
+
+	; Branch back to the top if it's still pressed
+	breq	MAIN
+
+	; If it's not pressed, then we change the pin state to unpressed
+	cbi		MAIN_STATUS, BUTTON_PRESS
+
+	MODE_BUTTON_UNPRESSED:
+
 	; Check if mode button is pressed!
 	lds		TEMP, 0x408 ; (PRTA_IN)
 
 	sbrs	TEMP, 7 ; Skip if bit in register is set
-	rjmp	KEEP_LOOPIN
+	rjmp	POST_MODE_DEBOUNCE
 
 	; Disable global interrupts, so we don't get interrupted :D
 	
@@ -204,10 +229,95 @@ MAIN:
 
 	; TODO: Add debounce here and add mode change functionality
 
-	; For future code, I will keep this here
-	KEEP_LOOPIN:
-    
+	RESTART_BUTTON_DEBOUNCE:
+
+	; The debounce checker will run 50 times and reset if a bounce is detected
+	ldi		DB_COUNT, 50
+
+	; Read in current pin value and isolate pin in question
+	lds		DB_COMPARE, 0x408 ; (PRTA_IN)
+	andi	DB_COMPARE, (1 << 7) ; Isolate pin 7
+
+	BUTTON_DEBOUNCE_LOOP:
+
+	; Now read in current value and compare it to original stored value.
+	; We restart the loop if a discepancy exists, if none exists, the
+	; loop will exit after 50 tries which should be enough time to
+	; let the pin stabalize
+
+	; Check to see if the two are the same
+	lds		TEMP, 0x408 ; (PRTA_IN)
+	andi	TEMP, (1 << 7)
+
+	cp		TEMP, DB_COMPARE
+
+	; If they do not equal, then restart the loop
+	brne	RESTART_BUTTON_DEBOUNCE
+
+	; If they do equal, continue the loop
+	dec		DB_COUNT
+
+	breq	MODE_DEBOUNCE_END	; Jump to end of loop
+	rjmp	BUTTON_DEBOUNCE_LOOP ; Reloop
+
+	; For a succesful debounce!
+	MODE_DEBOUNCE_END:
+
+	; Set that the button was pressed, so the loop doesn't go forever!
+	sbi		MAIN_STATUS, BUTTON_PRESS
+
+	; Cycle to the next mode
+	rcall CYCLE_MODE
+
+	POST_MODE_DEBOUNCE:
+
     rjmp    MAIN
+
+CYCLE_MODE:
+
+	; A function specifically for cycling which mode you are in
+	; It comes in handy for use with the MODE button ;)
+
+	push	TEMP
+
+	; Zombie check
+	rcall	IS_ZOMBIE
+
+	cpi		TEMP, 0xFF
+	brne	NOT_ZOMBIE
+
+		; Change them to a human
+		rcall	BECOME_HUMAN
+		rjmp	CYCLE_MODE_END
+
+	NOT_ZOMBIE:
+
+	; Human check
+	rcall	IS_HUMAN
+
+	cpi		TEMP, 0xFF
+	brne	NOT_HUMAN
+
+		; Change them to a doctor
+		rcall	BECOME_DOCTOR
+		rjmp	CYCLE_MODE_END
+	
+	NOT_HUMAN:
+
+	; Doctor Check
+	rcall	IS_DOCTOR
+
+	cpi		TEMP, 0xFF
+	brne	CYCLE_MODE_END
+
+		; Change them to a zombie
+		rcall	BECOME_ZOMBIE
+
+	CYCLE_MODE_END:
+
+	pop		TEMP
+
+	ret
 
 STOP_TA0:
 
